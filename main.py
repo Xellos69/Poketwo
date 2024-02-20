@@ -1,15 +1,12 @@
 import asyncio
 import random
-import string
-import json
 import re
-from discord.ext import commands
-import os
-import time
 import requests
+import time
+from discord.ext import commands
 from termcolor import colored
 
-token = ""
+token = "
 ownerid = 822830992426926172
 
 client = commands.Bot(command_prefix='$')
@@ -20,6 +17,7 @@ shiny = 0
 legendary = 0
 num_pokemon = 0
 mythical = 0
+pokemon_list = ""
 
 def solve(message):
     hint = [char for i, char in enumerate(message[15:-1]) if char != "\\"]
@@ -32,7 +30,7 @@ def LoadPokemons():
     global pokemon_list
     print('Loading Pokémon list..')
     try:
-        url = Files['data/pokemon']
+        url = 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon'
         pokemons = requests.get(url)
         with open('data/pokemon', 'w', encoding='utf8') as PokemonList:
             PokemonList.write(pokemons.text)
@@ -46,7 +44,7 @@ def LoadPokemons():
 @client.event
 async def on_ready():
     LoadPokemons()
-    print(colored(f'Autocatch running on: {client.user.name}', 'black', 'on_white'))
+    print(colored(f'Autocatch is connected as {client.user}', 'black', 'on_white'))
 
 @client.event
 async def on_message(message):
@@ -56,7 +54,7 @@ async def on_message(message):
     global num_pokemon
     global mythical
 
-    if message.author.id == 854233015475109888 and not message.embeds:
+    if message.author.id == ownerid and not message.embeds:
         content = message.content.lower().strip()
         if content.count(':') == 1:
             name, percentage = content.split(':')
@@ -134,7 +132,7 @@ def CheckForUpdates():
         time.sleep(600)
 
 Files = {
-    'data/pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon',
+    'data/pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/data/pokemon',
 }
 
 CheckForUpdates()
