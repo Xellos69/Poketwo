@@ -82,7 +82,7 @@ async def on_message(message):
                         await asyncio.sleep(random.randint(1, 3))
                         channel = message.channel
                         name = i.lower()
-                        await channel.send(f'<@716390085896962058> cAtCh {name}')
+                        await channel.send(f'<@716390085896962058> c {name}')
 
         elif 'Congratulations' in content:
             split = content.split(' ')
