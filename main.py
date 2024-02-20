@@ -3,20 +3,23 @@ import random
 import string
 import json
 import re
-from discord.ext import commands, tasks
-import aiohttp
+from discord.ext import commands
 import os
+import time
+import requests
+from termcolor import colored
 
 token = ""
 ownerid = 822830992426926172
-
-with open('pokemon', 'r', encoding='utf8') as file:
-    pokemon_list = file.read()
 
 client = commands.Bot(command_prefix='$')
 client.remove_command('help')
 
 captcha = True
+shiny = 0
+legendary = 0
+num_pokemon = 0
+mythical = 0
 
 def solve(message):
     hint = [char for i, char in enumerate(message[15:-1]) if char != "\\"]
@@ -25,14 +28,33 @@ def solve(message):
     solution = re.findall("^" + hint_replaced + "$", pokemon_list, re.MULTILINE)
     return solution
 
+def LoadPokemons():
+    global pokemon_list
+    print('Loading Pokémon list..')
+    try:
+        url = Files['data/pokemon']
+        pokemons = requests.get(url)
+        with open('data/pokemon', 'w', encoding='utf8') as PokemonList:
+            PokemonList.write(pokemons.text)
+            print('Pokémon list updated.')
+    except Exception as e:
+        print(f'Error updating Pokémon list: {e}')
+
+    with open('data/pokemon', 'r', encoding='utf8') as file:
+        pokemon_list = file.read()
+
 @client.event
 async def on_ready():
-    owner = client.get_user(ownerid)
-    await owner.send("I'm Ready Catch")
+    LoadPokemons()
+    print(colored(f'Autocatch running on: {client.user.name}', 'black', 'on_white'))
 
 @client.event
 async def on_message(message):
     global captcha
+    global shiny
+    global legendary
+    global num_pokemon
+    global mythical
 
     if message.author.id == 854233015475109888 and not message.embeds:
         content = message.content.lower().strip()
@@ -62,14 +84,25 @@ async def on_message(message):
                         name = i.lower()
                         await channel.send(f'<@716390085896962058> cAtCh {name}')
 
-        if 'That is the wrong pokémon!' in content and captcha:
+        elif 'Congratulations' in content:
+            split = content.split(' ')
+            pokemon = ' '.join(split[7:]).replace('!', '')
+            if 'seem unusual...' in content:
+                shiny += 1
+                print(f'Shiny Pokémon caught! Pokémon: {pokemon}')
+                print(f'Shiny: {shiny} | Legendary: {legendary} | Mythical: {mythical}')
+            else:
+                num_pokemon += 1
+                print(f'Total Pokémon Caught: {num_pokemon} :{pokemon}')
+
+        elif 'That is the wrong pokémon!' in content and captcha:
             await asyncio.sleep(random.randint(1, 3))
             channel = message.channel
             await channel.send(f'<@716390085896962058> h')
 
         elif 'human' in content:
             captcha = False
-            owner = client.get_user(ownerid)
+            owner = await client.fetch_user(ownerid)
             await owner.send(f"<@{ownerid}> Please verify the Poketwo captcha asap!\n https://verify.poketwo.net/captcha/{client.user.id}")
 
 @client.command()
@@ -85,29 +118,25 @@ async def say(ctx, *, message):
         mention_user = '<@716390085896962058>'
         await ctx.send(f'{mention_user} {message}')
 
-@tasks.loop(minutes=10)
-async def refresh_files():
-    await update_files()
-
-async def download_and_update_file(filename, url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                content = await response.text()
-                with open(filename, 'w', encoding='utf8') as file:
-                    file.write(content)
-                print(f'File {filename} updated.')
+def CheckForUpdates():
+    requests_count = 1
+    while True:
+        for file, url in Files.items():
+            print(f'{requests_count} - (GET)[{url}]')
+            requests_count += 1
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open(file, 'w') as arch:
+                    arch.write(response.text)
+                    print(f'{file} Reloaded.')
             else:
-                print(f'Failed to update {filename}. Status code: {response.status}')
+                print(f'Failed to update {file}. Status code: {response.status_code}')
+        time.sleep(600)
 
-async def update_files():
-    Files = {
-        'pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon',
-    }
-    
-    for filename, url in Files.items():
-        await download_and_update_file(filename, url)
+Files = {
+    'data/pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon',
+}
 
-refresh_files.start()
+CheckForUpdates()
 
 client.run(token)
