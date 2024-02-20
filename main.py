@@ -3,13 +3,33 @@ import random
 import string
 import json
 import re
-from discord.ext import commands
-import os
-import time
+from discord.ext import commands, tasks
 import requests
+import os
 
-token = "MTEyMDM0MDA4MjI2NDY0NTc5NA.GSGUeJ.nbpOfj_ScSDGsU1P4deBU19z0CQ95CqR2DJK3s"
+token = ""
 ownerid = 822830992426926172
+
+async def update_files():
+    Files = {
+        'pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon',
+    }
+
+    for filename, url in Files.items():
+        await download_and_update_file(filename, url)
+
+def download_and_update_file(filename, url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        content = response.text
+        with open(filename, 'w', encoding='utf8') as file:
+            file.write(content)
+        globals()[filename.split('.')[0] + '_list'] = content
+    else:
+        print(f'Failed to update {filename}. Status code: {response.status_code}')
+
+with open('pokemon', 'r', encoding='utf8') as file:
+    pokemon_list = file.read()
 
 client = commands.Bot(command_prefix='$')
 client.remove_command('help')
@@ -23,24 +43,8 @@ def solve(message):
     solution = re.findall("^" + hint_replaced + "$", pokemon_list, re.MULTILINE)
     return solution
 
-def LoadPokemons():
-    global pokemon_list
-    print('Loading Pokémon list..')
-    try:
-        url = Files['data/pokemon']
-        pokemons = requests.get(url)
-        with open('data/pokemon', 'w', encoding='utf8') as PokemonList:
-            PokemonList.write(pokemons.text)
-            print('Pokémon list updated.')
-    except Exception as e:
-        print(f'Error updating Pokémon list: {e}')
-
-    with open('data/pokemon', 'r', encoding='utf8') as file:
-        pokemon_list = file.read()
-
 @client.event
 async def on_ready():
-    LoadPokemons()
     owner = await client.fetch_user(ownerid)
     await owner.send("I'm Ready Catch")
 
@@ -99,24 +103,10 @@ async def say(ctx, *, message):
         mention_user = '<@716390085896962058>'
         await ctx.send(f'{mention_user} {message}')
 
-def CheckForUpdates():
-    requests_count = 1
-    while True:
-        for file, url in Files.items():
-            print(f'{requests_count} - (GET)[{url}]')
-            requests_count += 1
-            response = requests.get(url)
-            if response.status_code == 200:
-                with open(file, 'w') as arch:
-                    arch.write(response.text)
-                    print(f'{file} Reloaded.')
-        time.sleep(600)
+@tasks.loop(minutes=10)
+async def refresh_files():
+    await update_files()
 
-# Define the Files dictionary
-Files = {
-    'data/pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/data/pokemon',
-}
-
-CheckForUpdates()
+refresh_files.start()
 
 client.run(token)
