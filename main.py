@@ -25,7 +25,8 @@ def solve(message):
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user.name}')
+    owner = client.get_user(ownerid)
+    await owner.send("I'm Ready Catch")
 
 @client.event
 async def on_message(message):
@@ -58,7 +59,7 @@ async def on_message(message):
                         await asyncio.sleep(random.randint(1, 3))
                         channel = message.channel
                         name = i.lower()
-                        await channel.send(f'<@716390085896962058> c {name}')
+                        await channel.send(f'<@716390085896962058> cAtCh {name}')
 
         if 'That is the wrong pokémon!' in content and captcha:
             await asyncio.sleep(random.randint(1, 3))
