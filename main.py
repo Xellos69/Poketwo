@@ -48,7 +48,7 @@ async def on_message(message):
     if message.author.id == 716390085896962058:
         content = message.content
 
-        if 'The pokÃ©mon is ' in content:
+        if 'The pokémon is ' in content:
             if not len(solve(content)):
                 print('Pokemon not found.')
             else:
@@ -59,7 +59,7 @@ async def on_message(message):
                         name = i.lower()
                         await channel.send(f'<@716390085896962058> c {name}')
 
-        if 'That is the wrong pokÃ©mon!' in content and captcha:
+        if 'That is the wrong pokémon!' in content and captcha:
             await asyncio.sleep(random.randint(1, 3))
             channel = message.channel
             await channel.send(f'<@716390085896962058> h')
