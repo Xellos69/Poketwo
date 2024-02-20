@@ -25,6 +25,7 @@ def solve(message):
 
 @client.event
 async def on_ready():
+    print(f'Logged in as {client.user.name}')
 
 @client.event
 async def on_message(message):
