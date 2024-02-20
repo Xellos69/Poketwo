@@ -4,29 +4,9 @@ import string
 import json
 import re
 from discord.ext import commands, tasks
-import requests
-import os
 
 token = ""
 ownerid = 822830992426926172
-
-async def update_files():
-    Files = {
-        'pokemon': 'https://raw.githubusercontent.com/Xellos69/catcher/main/pokemon',
-    }
-
-    for filename, url in Files.items():
-        await download_and_update_file(filename, url)
-
-def download_and_update_file(filename, url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        content = response.text
-        with open(filename, 'w', encoding='utf8') as file:
-            file.write(content)
-        globals()[filename.split('.')[0] + '_list'] = content
-    else:
-        print(f'Failed to update {filename}. Status code: {response.status_code}')
 
 with open('pokemon', 'r', encoding='utf8') as file:
     pokemon_list = file.read()
@@ -45,8 +25,6 @@ def solve(message):
 
 @client.event
 async def on_ready():
-    owner = await client.fetch_user(ownerid)
-    await owner.send("I'm Ready Catch")
 
 @client.event
 async def on_message(message):
@@ -59,9 +37,10 @@ async def on_message(message):
             name = name.strip()
             percentage = percentage.strip()
             if percentage.endswith('%'):
-                await asyncio.sleep(random.randint(1, 3))
-                channel = message.channel
-                await channel.send(f'<@716390085896962058> c {name}')
+                if captcha:
+                    await asyncio.sleep(random.randint(1, 3))
+                    channel = message.channel
+                    await channel.send(f'<@716390085896962058> c {name}')
 
     if message.author.id == ownerid and message.content.startswith('$'):
         await client.process_commands(message)
@@ -69,7 +48,7 @@ async def on_message(message):
     if message.author.id == 716390085896962058:
         content = message.content
 
-        if 'The pokémon is ' in content:
+        if 'The pokÃ©mon is ' in content:
             if not len(solve(content)):
                 print('Pokemon not found.')
             else:
@@ -78,16 +57,16 @@ async def on_message(message):
                         await asyncio.sleep(random.randint(1, 3))
                         channel = message.channel
                         name = i.lower()
-                        await channel.send(f'<@716390085896962058> cAtCh {name}')
+                        await channel.send(f'<@716390085896962058> c {name}')
 
-        if 'That is the wrong pokémon!' in content and captcha:
+        if 'That is the wrong pokÃ©mon!' in content and captcha:
             await asyncio.sleep(random.randint(1, 3))
             channel = message.channel
             await channel.send(f'<@716390085896962058> h')
 
         elif 'human' in content:
             captcha = False
-            owner = await client.fetch_user(ownerid)
+            owner = client.get_user(ownerid)
             await owner.send(f"<@{ownerid}> Please verify the Poketwo captcha asap!\n https://verify.poketwo.net/captcha/{client.user.id}")
 
 @client.command()
@@ -102,11 +81,5 @@ async def say(ctx, *, message):
     if ctx.author.id == ownerid:
         mention_user = '<@716390085896962058>'
         await ctx.send(f'{mention_user} {message}')
-
-@tasks.loop(minutes=10)
-async def refresh_files():
-    await update_files()
-
-refresh_files.start()
 
 client.run(token)
