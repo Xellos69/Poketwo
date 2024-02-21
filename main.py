@@ -14,10 +14,10 @@ legendary = 0
 num_pokemon = 0
 mythical = 0
 
-with open('data/legendary', 'r') as file:
+with open('data/legendary', 'r' ) as file:
     legendary_list = file.read()
 
-with open('data/mythical', 'r') as file:
+with open('data/mythical', 'r' ) as file:
     mythical_list = file.read()
 
 client = commands.Bot(command_prefix='$')
@@ -51,7 +51,7 @@ async def on_message(message):
             name, percentage = map(str.strip, content.split(':'))
             if percentage.endswith('%'):
                 if captcha:
-                    await asyncio.sleep(random.randint(1.5, 4.0))
+                    await asyncio.sleep(random.randint(1, 3.5))
                     await message.channel.send(f'<@716390085896962058> c {name.lower()}')
 
     if message.author.id == ownerid and message.content.startswith('$'):
@@ -95,7 +95,7 @@ async def on_message(message):
             await owner.send(f"<@{ownerid}> Please verify the Poketwo captcha asap!\n https://verify.poketwo.net/captcha/{client.user.id}")
 
         elif 'That is the wrong pokémon!' in content and captcha:
-            await asyncio.sleep(random.randint(1.0, 3.0))
+            await asyncio.sleep(random.randint(1, 3))
             await message.channel.send(f'<@716390085896962058> h')
 
 @client.command()
