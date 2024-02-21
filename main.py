@@ -51,7 +51,7 @@ async def on_message(message):
             name, percentage = map(str.strip, content.split(':'))
             if percentage.endswith('%'):
                 if captcha:
-                    await asyncio.sleep(random.randint(1, 3.5))
+                    await asyncio.sleep(random.randint(1, 3))
                     await message.channel.send(f'<@716390085896962058> c {name.lower()}')
 
     if message.author.id == ownerid and message.content.startswith('$'):
