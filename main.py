@@ -14,10 +14,10 @@ legendary = 0
 num_pokemon = 0
 mythical = 0
 
-with open('data/legendary', 'r' ) as file:
+with open('data/legendary', 'r') as file:
     legendary_list = file.read()
 
-with open('data/mythical', 'r' ) as file:
+with open('data/mythical', 'r') as file:
     mythical_list = file.read()
 
 client = commands.Bot(command_prefix='$')
@@ -78,11 +78,11 @@ async def on_message(message):
                 shiny += 1
                 print(f'Shiny Pokémon caught! Pokémon: {pokemon}')
                 print(f'Shiny: {shiny} | Legendary: {legendary} | Mythical: {mythical}')
-            elif re.findall('^' + pokemon + '$', legendary_list, re.MULTILINE):
+            elif re.findall('^' + pokemon + '$', legendary_list, re.MULTILINE | re.IGNORECASE):
                 legendary += 1
                 print(f'Legendary Pokémon caught! Pokémon: {pokemon}')
                 print(f'Shiny: {shiny} | Legendary: {legendary} | Mythical: {mythical}')
-            elif re.findall('^' + pokemon + '$', mythical_list, re.MULTILINE):
+            elif re.findall('^' + pokemon + '$', mythical_list, re.MULTILINE | re.IGNORECASE):
                 mythical += 1
                 print(f'Mythical Pokémon caught! Pokémon: {pokemon}')
                 print(f'Shiny: {shiny} | Legendary: {legendary} | Mythical: {mythical}')
