@@ -1,7 +1,5 @@
 import asyncio
 import random
-import string
-import json
 import re
 from discord.ext import commands, tasks
 
@@ -50,13 +48,11 @@ async def on_message(message):
     if message.author.id == 854233015475109888 and not message.embeds:
         content = message.content.lower().strip()
         if content.count(':') == 1:
-            name, percentage = content.split(':')
-            name = name.strip()
-            percentage = percentage.strip()
+            name, percentage = map(str.strip, content.split(':'))
             if percentage.endswith('%'):
                 if captcha:
                     await asyncio.sleep(random.randint(1, 3))
-                    await message.channel.send(f'<@716390085896962058> c {i.lower()}')
+                    await message.channel.send(f'<@716390085896962058> c {name.lower()}')
                 else:
                     await asyncio.sleep(random.randint(1, 3))
                     await message.channel.send(f'<@716390085896962058> h')
@@ -67,7 +63,17 @@ async def on_message(message):
     if message.author.id == 716390085896962058:
         content = message.content
 
-        if 'Congratulations' in content:
+        if 'The pokémon is ' in content:
+            solved_pokemon = solve(content)
+            if not solved_pokemon:
+                print('Pokemon not found.')
+            else:
+                for i in solved_pokemon:
+                    if captcha:
+                        await asyncio.sleep(random.randint(1, 3))
+                        await message.channel.send(f'<@716390085896962058> c {i.lower()}')
+
+        elif 'Congratulations' in content:
             num_pokemon += 1
             split = content.split(' ')
             pokemon = ' '.join(split[7:]).replace('!', '')
@@ -85,19 +91,6 @@ async def on_message(message):
                 print(f'Shiny: {shiny} | Legendary: {legendary} | Mythical: {mythical}')
             else:
                 print(f'Total Pokémon Caught: {num_pokemon} :{pokemon}')
-
-        elif 'The pokémon is ' in content:
-            if not len(solve(content)):
-                print('Pokemon not found.')
-            else:
-                for i in solve(content):
-                    if captcha:
-                        await asyncio.sleep(random.randint(1, 3))
-                        await message.channel.send(f'<@716390085896962058> c {i.lower()}')
-
-        elif 'That is the wrong pokémon!' in content and captcha:
-            await asyncio.sleep(random.randint(1, 3))
-            await message.channel.send(f'<@716390085896962058> h')
 
         elif 'human' in content:
             captcha = False
