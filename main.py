@@ -51,11 +51,8 @@ async def on_message(message):
             name, percentage = map(str.strip, content.split(':'))
             if percentage.endswith('%'):
                 if captcha:
-                    await asyncio.sleep(random.randint(1, 3))
+                    await asyncio.sleep(random.randint(1.5, 4.0))
                     await message.channel.send(f'<@716390085896962058> c {name.lower()}')
-                else:
-                    await asyncio.sleep(random.randint(1, 3))
-                    await message.channel.send(f'<@716390085896962058> h')
 
     if message.author.id == ownerid and message.content.startswith('$'):
         await client.process_commands(message)
@@ -96,6 +93,10 @@ async def on_message(message):
             captcha = False
             owner = client.get_user(ownerid)
             await owner.send(f"<@{ownerid}> Please verify the Poketwo captcha asap!\n https://verify.poketwo.net/captcha/{client.user.id}")
+
+        elif 'That is the wrong pokémon!' in content and captcha:
+            await asyncio.sleep(random.randint(1.0, 3.0))
+            await message.channel.send(f'<@716390085896962058> h')
 
 @client.command()
 async def start(ctx):
